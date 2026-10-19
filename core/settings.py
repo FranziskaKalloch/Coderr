@@ -21,7 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 SECRET_KEY = getenv("SECRET_KEY", "insecure-secret-key")
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
@@ -40,6 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_spectacular',
+    'offers_app.apps.OffersAppConfig',
+    'orders_app.apps.OrdersAppConfig',
+    'platform_app.apps.PlatformAppConfig',
+    'profiles_app.apps.ProfilesAppConfig',
+    'reviews_app.apps.ReviewsAppConfig',
+    'user_auth_app.apps.UserAuthAppConfig',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +58,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# DEfault Schema Class wird verwendet, um die Endpunkte zu beschreiben
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# Hier liegen die Meta Daten der API und die Version der API
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Coderr API',
+    'DESCRIPTION': 'API für die Coderr-Plattform',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 ROOT_URLCONF = 'core.urls'
 
