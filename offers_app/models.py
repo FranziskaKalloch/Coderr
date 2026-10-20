@@ -10,9 +10,6 @@ class Offer(models.Model):
     description = models.TextField(blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # offer_type ?
-    # details = models.?
-    
 
 # Jedes OfferDetail gehört genau zu einem Angebot!
 class OfferDetail(models.Model):
@@ -30,3 +27,5 @@ class OfferDetail(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     features = models.JSONField(default=list)
     offer_type = models.CharField(max_length=15, choices=OFFER_TYPE_CHOICES)
+    
+
