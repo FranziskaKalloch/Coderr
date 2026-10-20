@@ -8,7 +8,26 @@ Bei einer n:m Beziehung verbindet eine zuätzliche Tabelle beide Seiten.
 
 Wichtig: Die Referenz wird nur auf einer Seite gespeichert. Django ermöglicht trotzdem den Zugriff in beide Richtungen; dafür ist unter anderem related_name da.
 
+## Verknüpfung
+
+Die Verknüpfung ist ein Feld in einem deiner Models, das auf einen Datensatz eines anderen Models zeigt.
+Um herauszufinden, wo es hingehört, formulierst du die Beziehung in beide Richtungen.
+
+Ein Benutzer kann mehrere Angebote erstellen.
+Ein Angebot gehört genau zu einem Benutzer.
+
+Das ist 1:n. Der Fremdschlüssel kommt auf die n-Seite, also ins Angebot.
+
+Django ermöglicht trotzdem beide Zugriffsrichtungen:
+
+offer.user                 | Benutzer dieses Angebots
+user.offers.all()          | Alle Angebote dieses Benutzers
+
+user ist das Feld, das du geschrieben hast. offers ist der Rückwärtsname aus related_name.
+
 ## User
+
+Es wird das eingebaute Django-User Modell benutzt. In user_auth_app/models.py muss man dafür kein eigenes Model schreiben. Die App kümmert sich später um Registrierung und Login.
 
 Felder, die Django bereits mit dem User-Model mitbringt:
 
@@ -56,7 +75,13 @@ Diese Felder sollten nicht doppelt im Profil gesetzt werden:
 GET /api/offers/
 Description: Dieser Endpunkt gibt eine Liste von Angeboten zurück. Jedes Angebot enthält eine Übersicht der Angebotsdetails, den minimalen Preis und die kürzeste Lieferzeit.
 
-Query Parameters
+Hier kommen drei Dinge zusammen: gespeicherte Angebote, Suchoptionen und die Verpackung der Antwort.
+Query Parameter bestimmen, welche Angebote man abruft.
+
+count, next, previous und results gehören zur Seiteneinteilung, also zur Pagination.
+
+### Query Parameters
+
 Name Type Description
 creator_id | integer | Filtert die Angebote nach dem Benutzer, der sie erstellt hat.
 min_price | float | Filtert Angebote mit einem Mindestpreis.
@@ -99,15 +124,15 @@ Hier bestehen zwei Beziehungen zum User:
 
 Felder:
 
-- customer_user → ForeignKey auf settings.AUTH_USER_MODEL, related_name='customer_orders'
-- business_user → ForeignKey auf settings.AUTH_USER_MODEL, related_name='business_orders'
+- customer_user  |  ForeignKey auf settings.AUTH_USER_MODEL, related_name='customer_orders'
+- business_user  |  ForeignKey auf settings.AUTH_USER_MODEL, related_name='business_orders'
 - Für beide würde ich zunächst on_delete=models.PROTECT wählen, damit das Löschen eines Benutzers nicht seine Bestellungen entfernt.
-- title → CharField
-- revisions → IntegerField
-- delivery_time_in_days → PositiveIntegerField, mindestens 1
-- price → DecimalField
-- features → JSONField, default=list
-- offer_type → CharField mit choices
-- status → CharField mit choices; genaue Statuswerte aus der API-Vorgabe übernehmen
-- created_at → DateTimeField mit auto_now_add=True
-- updated_at → DateTimeField mit auto_now=True
+- title  |  CharField
+- revisions  |  IntegerField
+- delivery_time_in_days  |  PositiveIntegerField, mindestens 1
+- price  |  DecimalField
+- features | JSONField, default=list
+- offer_type  |  CharField mit choices
+- status | CharField mit choices; genaue Statuswerte aus der API-Vorgabe übernehmen
+- created_at  |  DateTimeField mit auto_now_add=True
+- updated_at |  DateTimeField mit auto_now=True
