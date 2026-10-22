@@ -136,3 +136,17 @@ Felder:
 - status | CharField mit choices; genaue Statuswerte aus der API-Vorgabe übernehmen
 - created_at  |  DateTimeField mit auto_now_add=True
 - updated_at |  DateTimeField mit auto_now=True
+
+## Review
+
+/api/base-info/: kein eigenes Model nötig, die vier Kennzahlen werden berechnet.
+
+## UniqueConstraints
+
+class Meta steht auf derselben Einrückungsebene wie das Model Feld
+constraints ist eine Liste mit Regeln.
+models.UniqueCosntraint() erstellt die Beschreibung einer Eindeutigkeitsregel
+fields nennt die Felder, deren Kombination eindeutig sein muss
+name gibt der Datenbankregel einen Name, damit sie bspw. in Migrationen identifiert werden kann
+
+Die Regel erlaubt also mehrere basic Pakete insgesamt, aber nur eines pro Angebot.

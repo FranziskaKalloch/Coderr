@@ -20,5 +20,7 @@ print(first_offer.title)
 # Erstelle eine ungespeicherte Instanz von OfferDetail mit dem Variablennamen first_detail. 
 # Weise anschließend ihrem Feld offer deine vorhandene Instanz first_offer zu.
 
-first_detail = OfferDetail()
-OfferDetail(first_offer)
+first_detail = OfferDetail() # erstellt das Paket
+first_detail.offer = first_offer 
+
+# first offer ist das gesamte Angebot, first detail ist ein Paket dieses Angebots, etwas Basic

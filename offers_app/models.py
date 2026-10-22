@@ -28,4 +28,10 @@ class OfferDetail(models.Model):
     features = models.JSONField(default=list)
     offer_type = models.CharField(max_length=15, choices=OFFER_TYPE_CHOICES)
     
-
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['offer', 'offer_type'],
+                name='unique_offer_package_type'
+            ),
+            ]
