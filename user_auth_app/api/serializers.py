@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import ValidationError
+from rest_framework.authtoken.models import Token
 
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -41,4 +42,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         profile = Profile.objects.create(user=user, 
                                          type=validated_data['type'])
+        
+        # create Token in Serializer
+        Token.objects.create(user=user)
         return user 

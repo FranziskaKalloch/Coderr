@@ -157,3 +157,7 @@ Die beiden Seiten haben unterschiedliche Aufgaben:
 Eine Methode wie create_user() benötigt Informationen, um einen User anzulegen: Wie soll er heißen? Welche E-Mail-Adresse hat er?
 
 username=validated_data['username'] bedeutet also: „Gib der Methode als Benutzernamen den Wert, den der Benutzer eingegeben hat.“
+
+### Passwort auf Stärke testen
+
+validate_password(). Sie prüft das Passwort anhand der Regeln aus deinen AUTH_PASSWORD_VALIDATORS in den Settings.
