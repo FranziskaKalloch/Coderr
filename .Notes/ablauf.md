@@ -66,3 +66,5 @@ Für den Token brauchst du einen User.
 Damit der User existiert, musst du ihn speichern.
 Bevor du speicherst, müssen die Daten geprüft sein.
 Damit der Serializer sie prüfen kann, musst du ihm die Eingaben übergeben.
+
+Daten empfangen → Serializer erstellen → validieren → speichern → Token erstellen → Antwort senden

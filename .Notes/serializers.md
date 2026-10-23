@@ -161,3 +161,16 @@ username=validated_data['username'] bedeutet also: „Gib der Methode als Benutz
 ### Passwort auf Stärke testen
 
 validate_password(). Sie prüft das Passwort anhand der Regeln aus deinen AUTH_PASSWORD_VALIDATORS in den Settings.
+
+### Token erstellen im Serializer
+
+mit:
+
+token = Token.objects.create(user=user)
+
+erstellen wir einen Token für den entsprechenden User.
+Links user: das Feld im Token-Modell, das auf einen User verweist.
+Rechts user: deine Variable, die das erstellte User-Objekt enthält.
+Wenn du den Token bereits im Serializer erstellst, muss die View ihn nicht erneut erstellen.
+
+Allerdings muss die View den Token kennen, um ihn in der Antwort zurückzusenden. Im Serializer erstellt zu sein bedeutet nicht automatisch, dass die View ihn erhält. Entscheidend ist, was deine create()-Methode zurückgibt: Dieser Rückgabewert kommt bei der View über serializer.save() an.
