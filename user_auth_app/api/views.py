@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, LoginSerializer
 
 
 class RegisterView(APIView):
@@ -22,4 +22,25 @@ class RegisterView(APIView):
                          "email": user.email, 
                          "user_id": user.id}, 
                         status=status.HTTP_201_CREATED)
+        
+# Die View ruft serializer.save() auf.
+# Dadurch läuft create() im Serializer: User, Profil und Token werden gespeichert.
+# create() gibt nur den User zurück. Dieser landet in der Variable user der View.
+# Mit Token.objects.get(user=user) liest die View den zugehörigen Token aus der Datenbank.
+# token.key liefert den eigentlichen Token-String für die Antwort.
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token=Token.objects.get(user=user)
+        return Response({
+            "token": token.key,
+            "username": user.username,
+            "email": user.email,
+            "user_id": user.id
+        }, status=status.HTTP_200_OK)
         
