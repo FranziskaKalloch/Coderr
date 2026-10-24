@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
@@ -42,7 +43,22 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         profile = Profile.objects.create(user=user, 
                                          type=validated_data['type'])
-        
-        # create Token in Serializer
-        Token.objects.create(user=user)
+        Token.objects.create(user=user) # create Token in Serializer
         return user 
+    
+class LoginSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True, required=True)
+    username = serializers.CharField()
+        
+    def validate(self, data):
+        user = authenticate(username=data['username'], password=data['password']) # prüft die Zugangsdaten
+        
+        if user is None: # wenn kein user gefunden wurde
+          raise serializers.ValidationError('Username and password are invalid')
+       
+        data['user'] = user # bei Erfolg wird der Benutzer in data gespeichert
+        return data 
+       
+       
+       
+       
