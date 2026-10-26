@@ -19,6 +19,16 @@ class ProfileTests(APITestCase):
         response = self.client.get(self.url) # Anfrage senden
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # Antwort prüfen
         self.assertEqual(response.data["username"], "Max_Mustermann")
+        
+    def test_get_profile_unauthenticated(self): # Profil existiert, Anmeldung fehlt
+        self.client.credentials() # Ohne Argumente entfernt sie die hinterlegten Zugangsdaten.
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED) 
+        
+    def test_no_profile(self):
+        url = reverse('profile-detail', args=[500]) # eine ID, die in der Testdatenbank nicht existiert
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 # GET einzelnes Profil	200 und richtige Profildaten; 401 ohne Anmeldung; 404 bei fehlendem Profil
 #PATCH Profil	200 und Änderungen gespeichert; ausgelassene Felder bleiben erhalten; 401 ohne Anmeldung; 403 bei fremdem Profil; 400 bei ungültigen Daten; 404 bei fehlendem Profil
