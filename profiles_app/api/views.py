@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
 
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from ..models import Profile 
-from .serializers import ProfileDetailSerializer
+from .serializers import ProfileDetailSerializer, ProfileUpdateSerializer
 from .permissions import IsOwner
 
 
@@ -25,6 +26,11 @@ class ProfileDetailView(APIView):
         ''' Partially updates a user profile after verifying that the requesting user owns it. '''
         profile = get_object_or_404(Profile, user_id=pk)
         self.permission_classes = [IsOwner]
-        self.check_object_permissions()
-        return Response(request, profile)
+        self.check_object_permissions(request, profile)
+        serializer = ProfileUpdateSerializer(profile, data=request.data, partial=True) # partial=True -> wird verwendet, um eine REssource teilweise zu aktualisieren (Partial Update), das bedeutet der Client muss nicht alle Felder senden, sondern nur die, die geändert werden sollen
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
