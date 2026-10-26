@@ -63,6 +63,11 @@ MIDDLEWARE = [
 # DEfault Schema Class wird verwendet, um die Endpunkte zu beschreiben
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
 }
 
 # Hier liegen die Meta Daten der API und die Version der API
