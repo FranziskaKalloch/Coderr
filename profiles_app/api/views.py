@@ -6,28 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from ..models import Profile
-from .serializers import ProfileDetailSerializer, ProfileUpdateSerializer
+from .serializers import ProfileDetailSerializer, ProfileUpdateSerializer, BusinessUserSerializer, CustomerUserSerializer
 from .permissions import IsOwner
-
-
-class BusinessProfileListView(APIView):
-    ''' Lists all business profiles for authenticated users. '''
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        profiles = Profile.objects.filter(type="business").select_related("user")
-        serializer = ProfileDetailSerializer(profiles, many=True)
-        return Response(serializer.data)
-
-
-class CustomerProfileListView(APIView):
-    ''' Lists all customer profiles for authenticated users. '''
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        profiles = Profile.objects.filter(type="customer").select_related("user")
-        serializer = ProfileDetailSerializer(profiles, many=True)
-        return Response(serializer.data)
 
 
 class ProfileDetailView(APIView):
@@ -54,3 +34,22 @@ class ProfileDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ProfileBusinessUserView(APIView):
+    ''' Returns a list of all business user '''
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        profile = Profile.objects.filter(type="business")
+        serializer = BusinessUserSerializer(profile, many=True)
+        return Response(serializer.data)
+        
+    
+class ProfileCustomerUserView(APIView):
+    ''' Returns a list of all customer user ''' 
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        profile = Profile.objects.filter(type="customer")
+        serializer = CustomerUserSerializer(profile, many=True)
+        return Response(serializer.data)  
