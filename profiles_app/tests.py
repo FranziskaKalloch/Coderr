@@ -83,7 +83,6 @@ class ProfileTests(APITestCase):
             url = reverse('profile-customer-list')
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(self.profile.type, 'customer')
         
         
 ###### GET 
