@@ -41,10 +41,49 @@ class ProfileTests(APITestCase):
             "description": "Das ist die neue Beschreibung"
         }
         response = self.client.patch(self.url, data)
-        self.profile.refresh_from_db() # lädt aktuell gespeicherte Werte aus der Datenbank in das Profilobjekt
+        self.profile.refresh_from_db() # lädt aktuell gespeicherte Werte aus der Datenbank in das Profilobjekt -> die neuen Werte liegen in self.profile.location und self.profile.description
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.profile.location, "Hamburg")
+        self.assertEqual(self.profile.location, "Hamburg") # prüft ob Hamburg tatsächlich in der db steht
         self.assertEqual(self.profile.description, "Das ist die neue Beschreibung")
+    
+    def test_edit_foreign_profile_forbidden(self): # Der Token aus dem setUp wird beibehalte. So versucht der erste Benutzer, das Profil des zweiten zu bearbeiten
+        user = User.objects.create_user(
+            username="Hans Wurst", email="wurst@web.de"
+        )
+        profile = Profile.objects.create(
+            user=user, 
+            type="customer", 
+            location="München", 
+            description="Das ist die Beschreibung von Hans Wurst"
+        )
+        
+        data = {
+            "location": "Essen"
+        }
+        
+        url = reverse('profile-detail', args=[user.pk])
+        response = self.client.patch(url, data)
+        self.profile.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(profile.location, "München")
+    
+    def test_get_business_profiles(self):
+        user = User.objects.create_user(
+            username="Business_User", email="business@web.de"
+        )
+        profile = Profile.objects.create(
+            user=user, type="business", location="Bonn", description="Ich bin Business User"
+        )
+        url = reverse('profile-business-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(profile.type, 'business')
+    
+    def test_get_customer_profiles(self):
+            url = reverse('profile-customer-list')
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(self.profile.type, 'customer')
         
         
 ###### GET 
@@ -54,14 +93,10 @@ class ProfileTests(APITestCase):
 
 ##### PATCH 
 # Profil 200 und Änderungen gespeichert; ausgelassene Felder bleiben erhalten; 
-# 401 ohne Anmeldung; 
 # 403 bei fremdem Profil; 
-# 400 bei ungültigen Daten; 
-# 404 bei fehlendem Profil
 
 ##### GET Business-Liste	
 # 200 und ausschließlich Business-Profile; 
-# 401 ohne Anmeldung
 
 ######GET Kunden-Liste	200 und ausschließlich Kundenprofile; 
 # 401 ohne Anmeldung
