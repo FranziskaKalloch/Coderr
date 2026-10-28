@@ -1,34 +1,33 @@
 from django.shortcuts import render
 from django.db.models import Min
 
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
+from rest_framework.validators import ValidationError
 
 from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer
 from ..models import Offer, OfferDetail
 
 # 
 
-class OfferListView(APIView):
+class OfferListView(ListAPIView):
+    """List offers with filtering, ordering, search and pagination."""
     permission_classes = [AllowAny]
+    serializer_class = OfferSerializer
     
-    def get(self, request):
-        # Ausgangsabfrage inklusive der berechneten Werte (Annotate)
-        offers = Offer.objects.annotate(
-            min_price=Min("offer_details__price"), 
-            min_delivery_time=Min("offer_details__delivery_time_in_days")) 
-        
-        # Query Parameter abfangen
-        creator_id = request.query_params.get("creator_id")
-        
-        # Wenn übergeben, das bereits annotierte Queryset filtern
-        if creator_id is not None:
-           offers = offers.filter(user_id=creator_id)
-        
-        serializer = OfferSerializer(offers, many=True)
-        return Response(serializer.data)
-        
+    filter_backends = [OrderingFilter, SearchFilter] # Um die Filter zu Aktivieren
+    search_fields = ["title", "description"]
+    ordering_fields = ["updated_at", "min_price"]
+    ordering = ["-updated_at"]
+    
+    
+    
+
+    
+    
         
 # Liste von Angeboten	Angebote aus der Datenbank abfragen
 # Minimaler Preis und kürzeste Lieferzeit	Zwei Werte pro Angebot annotieren
