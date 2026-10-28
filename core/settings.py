@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'profiles_app.apps.ProfilesAppConfig',
     'reviews_app.apps.ReviewsAppConfig',
     'user_auth_app.apps.UserAuthAppConfig',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -68,7 +69,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
+
+
 
 # Hier liegen die Meta Daten der API und die Version der API
 SPECTACULAR_SETTINGS = {
