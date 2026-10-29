@@ -3,12 +3,12 @@ from rest_framework.validators import ValidationError
 
 from django.contrib.auth.models import User
 from django.forms.models import __all__
-
+from django.db import transaction
 from ..models import Offer, OfferDetail
 
 
 class OfferDetailSerializer(serializers.HyperlinkedModelSerializer):
-    '''  '''
+    ''' Represent an offer package by its ID and detail URL. '''
     url = serializers.HyperlinkedIdentityField(view_name="offer-detail")
     class Meta:
         model = OfferDetail
@@ -16,14 +16,14 @@ class OfferDetailSerializer(serializers.HyperlinkedModelSerializer):
  
  
 class UserDetailSerializer(serializers.ModelSerializer):
-    '''  '''
+    ''' Provide the offer creator's first name, last name, and username. '''
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'username')
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    '''  '''
+    ''' Represent an offer with package links, creator information, minimum price, and shortest delivery time. '''
     details = OfferDetailSerializer(many=True, source="offer_details", read_only=True)
     user_details = UserDetailSerializer(read_only=True, source="user")
     min_price = serializers.FloatField(read_only=True)
@@ -33,7 +33,7 @@ class OfferSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details')
 
 class OfferDetailCreateSerializer(serializers.ModelSerializer):
-    '''  '''
+    ''' Validate and represent an individual offer package, including its features and package type. '''
     features = serializers.ListField(child=serializers.CharField(max_length=100))
     offer_type = serializers.ChoiceField(choices=OfferDetail.OFFER_TYPE_CHOICES)
     class Meta:
@@ -41,8 +41,8 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
         fields = ('id','title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type')
     
 class OfferCreateSerializer(serializers.ModelSerializer):
-    '''  '''
-    details = OfferDetailCreateSerializer(many=True, min_length=3, max_length=3) # An Offer contains 3 Details!
+    ''' Validate and create an offer with exactly three packages: basic, standard, and premium. '''
+    details = OfferDetailCreateSerializer(many=True, min_length=3, max_length=3, source="offer_details") # An Offer contains 3 Details!
     class Meta:
         model = Offer
         fields = ('id', 'title', 'image', 'description', 'details')
@@ -61,9 +61,9 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         
         return data
         
-        
+    @transaction.atomic  
     def create(self, validated_data): # diese Methode wird aufgerufen, wenn ein Objekt erstellt werden soll
-        ''' Create and return an offer object, given the validated data '''
+        ''' Create an offer and its associated packages in a single database transaction. '''
         details = validated_data.pop('details')
         offer = Offer.objects.create(**validated_data)
         

@@ -9,8 +9,9 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework import status
 
-from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer
+from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
 
@@ -67,8 +68,16 @@ class OfferListView(ListAPIView):
         
         return queryset
     
+    def post(self, request):
+        '''  '''
+        serializer = OfferCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+    
 class OfferDetailView(RetrieveAPIView):
     permission_classes = [AllowAny]
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
-    
+
