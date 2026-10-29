@@ -12,12 +12,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer
+from .permissions import BusinessUser
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
 
 class OfferListView(ListAPIView):
     """List offers with filtering, ordering, search and pagination."""
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny, BusinessUser]
     serializer_class = OfferSerializer
     pagination_class = OfferPagination
     
@@ -69,7 +70,7 @@ class OfferListView(ListAPIView):
         return queryset
     
     def post(self, request):
-        '''  '''
+        ''' Validate the request data and create an offer for the authenticated user. '''
         serializer = OfferCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
@@ -77,6 +78,7 @@ class OfferListView(ListAPIView):
         
     
 class OfferDetailView(RetrieveAPIView):
+    '''  '''
     permission_classes = [AllowAny]
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
