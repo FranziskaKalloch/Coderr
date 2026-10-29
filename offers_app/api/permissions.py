@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
-from profiles_app import Profile
+from profiles_app.models import Profile
 
 class BusinessUser(BasePermission):
     ''' Allows public read access and restricts offer creation to authenticated business users.'''

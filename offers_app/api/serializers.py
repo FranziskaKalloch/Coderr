@@ -64,21 +64,14 @@ class OfferCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic  
     def create(self, validated_data): # diese Methode wird aufgerufen, wenn ein Objekt erstellt werden soll
         ''' Create an offer and its associated packages in a single database transaction. '''
-        details = validated_data.pop('details')
+        details = validated_data.pop('offer_details')
         offer = Offer.objects.create(**validated_data)
         
         for detail in details:
             OfferDetail.objects.create(offer=offer,**detail)
         
         return offer
-
-#### POST OFFERS
-## Äußerer Serializer:
-# title, image, description, details []
-
-## Nested Serializer (details):
-# eine Liste mit genau drei Paketen, Jedes Paket wird durch denselben Nested Serializer verarbeitet
-# titles, revisions, delivery_time_in_days, price, features und offer_type
-
-## features ist eine Liste von Strings
-## offer_type eine Auswahl von drei Werten (basic, standard, premium)
+    
+    class OfferRetrieveSerializer(OfferSerializer):
+        class Meta(OfferSerializer.Meta):
+            fields = ('id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time')

@@ -16,6 +16,7 @@ from .permissions import BusinessUser
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
 
+
 class OfferListView(ListAPIView):
     """List offers with filtering, ordering, search and pagination."""
     permission_classes = [AllowAny, BusinessUser]
@@ -28,11 +29,12 @@ class OfferListView(ListAPIView):
     ordering = ["-updated_at"]
     
     def get_queryset(self):
+        ''' Annotate offers with their minimum price and shortest delivery time, then filter by creator, minimum price, and maximum delivery time. '''
         queryset = Offer.objects.annotate(
                 min_price=Min("offer_details__price"),
-                min_delivery_time=Min("offer_details__delivery_time_in_days"), # für jedes Angebot die kürzeste Lieferzeit berechnen
+                min_delivery_time=Min("offer_details__delivery_time_in_days"), 
             )
-        creator_id = self.request.query_params.get("creator_id") # # Liest creator_id aus der URL. Fehlt der Parameter, kommt None zurück.
+        creator_id = self.request.query_params.get("creator_id")
         
         if creator_id is not None:
             try:
@@ -78,7 +80,7 @@ class OfferListView(ListAPIView):
         
     
 class OfferDetailView(RetrieveAPIView):
-    '''  '''
+    ''' Retrieve an offer package by its ID with public access. '''
     permission_classes = [AllowAny]
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
