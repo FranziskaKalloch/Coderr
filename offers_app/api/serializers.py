@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.validators import ValidationError
+
 from django.contrib.auth.models import User
 from django.forms.models import __all__
 
@@ -40,14 +42,28 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
     
 class OfferCreateSerializer(serializers.ModelSerializer):
     '''  '''
-    details = OfferDetailCreateSerializer(many=True)
+    details = OfferDetailCreateSerializer(many=True, min_length=3, max_length=3) # An Offer contains 3 Details!
     class Meta:
         model = Offer
         fields = ('id', 'title', 'image', 'description', 'details')
+    
+    def validate_details(self, data):
+        ''' Check each offer type appears only once '''
+        offer_types = []
+        for detail in data:
+            each_type = detail['offer_type'] # offer_type contains after each round the types
+            offer_types.append(each_type)
+        
+        unique_types = set(offer_types)
+        
+        if len(unique_types) != 3:
+            raise ValidationError
+        
         
     def create(self, validated_data): # diese Methode wird aufgerufen, wenn ein Objekt erstellt werden soll
-        '''  '''
-        offer = Offer.objects.create()
+        ''' Create and return an offer object, given the validated data '''
+        offer = Offer.objects.create(**validated_data)
+        return offer
 
 #### POST OFFERS
 ## Äußerer Serializer:
