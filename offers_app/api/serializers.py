@@ -48,21 +48,28 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'image', 'description', 'details')
     
     def validate_details(self, data):
-        ''' Check each offer type appears only once '''
-        offer_types = []
-        for detail in data:
-            each_type = detail['offer_type'] # offer_type contains after each round the types
-            offer_types.append(each_type)
+        ''' Check that each package type appears exactly once. '''
+        offer_types = []  # Create an empty list to collect the package types.
+        for detail in data: # Loop through the package dictionaries.
+            each_type = detail['offer_type'] # Read the current package's type, such as "basic".
+            offer_types.append(each_type)    # Add this type to the collection.
         
-        unique_types = set(offer_types)
+        unique_types = set(offer_types) # Convert the list to a set, which removes duplicate values
         
-        if len(unique_types) != 3:
-            raise ValidationError
+        if len(unique_types) != 3: # Reject the data if there are fewer than three distinct types.  # The field already requires exactly three packages.
+            raise ValidationError('Die Pakettypen basic, standard und premium müssen jeweils einmal vorkommen.')
+        
+        return data
         
         
     def create(self, validated_data): # diese Methode wird aufgerufen, wenn ein Objekt erstellt werden soll
         ''' Create and return an offer object, given the validated data '''
+        details = validated_data.pop('details')
         offer = Offer.objects.create(**validated_data)
+        
+        for detail in details:
+            OfferDetail.objects.create(offer=offer,**detail)
+        
         return offer
 
 #### POST OFFERS
