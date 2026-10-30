@@ -174,3 +174,7 @@ Rechts user: deine Variable, die das erstellte User-Objekt enthält.
 Wenn du den Token bereits im Serializer erstellst, muss die View ihn nicht erneut erstellen.
 
 Allerdings muss die View den Token kennen, um ihn in der Antwort zurückzusenden. Im Serializer erstellt zu sein bedeutet nicht automatisch, dass die View ihn erhält. Entscheidend ist, was deine create()-Methode zurückgibt: Dieser Rückgabewert kommt bei der View über serializer.save() an.
+
+## source
+
+'source' bestimmt, woher ein Feld seinen Wert bezieht.

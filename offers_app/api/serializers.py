@@ -62,7 +62,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return data
         
     @transaction.atomic  
-    def create(self, validated_data): # diese Methode wird aufgerufen, wenn ein Objekt erstellt werden soll
+    def create(self, validated_data): 
         ''' Create an offer and its associated packages in a single database transaction. '''
         details = validated_data.pop('offer_details')
         offer = Offer.objects.create(**validated_data)
@@ -73,5 +73,6 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return offer
     
     class OfferRetrieveSerializer(OfferSerializer):
+        '''  '''
         class Meta(OfferSerializer.Meta):
             fields = ('id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time')

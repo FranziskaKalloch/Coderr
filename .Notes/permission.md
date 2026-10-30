@@ -46,11 +46,14 @@ class BusinessUser(BasePermission):
         if not user.is_authenticated:
             return False
 
-        # Get the user's profile, or None if no profile exists.
         profile = getattr(user, "profile", None)
 
-        # Deny access if the user has no profile.
-        if profile is None:
+        if profile is None:     # Deny access if the user has no profile.
             return False
 
         return profile.type == "business"
+
+## Beispiel
+
+Punktnotation       ->    user.email
+getattr()           ->    getattr(user, "email")

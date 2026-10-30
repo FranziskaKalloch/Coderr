@@ -16,7 +16,6 @@ from .permissions import BusinessUser
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
 
-
 class OfferListView(ListAPIView):
     """List offers with filtering, ordering, search and pagination."""
     permission_classes = [AllowAny, BusinessUser]
