@@ -73,6 +73,6 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return offer
     
     class OfferRetrieveSerializer(OfferSerializer):
-        '''  '''
+        ''' Serialize a single offer with detail links and metadata. '''
         class Meta(OfferSerializer.Meta):
             fields = ('id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time')

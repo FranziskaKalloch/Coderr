@@ -24,11 +24,13 @@ class OfferListCreateTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
         
     def test_get_offers(self):
+        ''' Test that the offers endpoint returns HTTP 200 OK. '''
         url = reverse("offers")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
     def test_create_offer(self):
+        ''' Test that a business user can create an offer successfully. '''
         url = reverse("offers")
         data = {
             "title": "Grafikdesign-Paket",
@@ -62,3 +64,16 @@ class OfferListCreateTest(APITestCase):
             }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+class UserOfferList(APITestCase):
+    def test_get_offers(self):
+        ''' Test that an offer can be retrieved by its ID. '''
+        pass
+    
+    def test_update_offer(self):
+        ''' Test that an offer can be partially updated by its owner. '''
+        pass
+    
+    def test_delefet_offer(self):
+        ''' Test that an offer can be deleted by its owner. '''
+        pass

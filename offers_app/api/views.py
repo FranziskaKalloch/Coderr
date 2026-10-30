@@ -1,17 +1,18 @@
 from django.shortcuts import render
 from django.db.models import Min
+from django.shortcuts import get_object_or_404
 
 from decimal import Decimal, InvalidOperation
 
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
-from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer
+from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer, OfferRetrieveSerializer
 from .permissions import BusinessUser
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
@@ -84,3 +85,27 @@ class OfferDetailView(RetrieveAPIView):
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
 
+
+class OfferRetrieveUpdateDeleteView(APIView):
+    ''' Endpoint to retrieve, update and delete objects by id '''
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, id):
+        ''' retrieve a single offer by its ID '''
+        queryset = Offer.objects.annotate(
+            min_price=Min("offer_details__price"),
+            min_delivery_time=Min("offer_details__delivery_time_in_days")
+        )
+        
+        offer = get_object_or_404(queryset, id=id)
+        serializer = OfferRetrieveSerializer(offer,
+                                             context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, id):
+        ''' updated partial fields of a single offer by its ID '''
+        pass
+    
+    def delete(sel, request, id):
+        '''  '''
+        pass
