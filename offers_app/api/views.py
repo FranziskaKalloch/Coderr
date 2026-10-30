@@ -108,9 +108,12 @@ class OfferRetrieveUpdateDeleteView(APIView):
         self.check_object_permissions(request, offer) # Objektprüfung findet jetzt erst statt
         serializer = OfferUpdateSerializer(offer, partial=True, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save() # save ruft hier die update() Methode auf
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def delete(sel, request, id):
-        '''  '''
-        pass
+    def delete(self, request, id):
+        ''' Delete an offer owned by the authenticated user. '''
+        offer = get_object_or_404(Offer, id=id)
+        self.check_object_permissions(request, offer)
+        offer.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
