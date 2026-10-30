@@ -16,4 +16,8 @@ class BusinessUser(BasePermission):
             return user.profile.type == 'business'
         except Profile.DoesNotExist:
             return False
-        
+
+class IsOfferOwner(BasePermission):
+    """Allow changes only to the owner of an offer."""
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user

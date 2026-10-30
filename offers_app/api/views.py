@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
-from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer, OfferRetrieveSerializer
+from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer
 from .permissions import BusinessUser
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
@@ -104,7 +104,8 @@ class OfferRetrieveUpdateDeleteView(APIView):
     
     def patch(self, request, id):
         ''' Partially update an offer owned by the authenticated user. '''
-        pass
+        offer = get_object_or_404(Offer, id=id)
+        serializer = OfferUpdateSerializer(offer, partial=True, data=request.data)
     
     def delete(sel, request, id):
         '''  '''
