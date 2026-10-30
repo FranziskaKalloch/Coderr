@@ -76,3 +76,48 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         ''' Serialize a single offer with detail links and metadata. '''
         class Meta(OfferSerializer.Meta):
             fields = ('id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time')
+            
+    class OfferUpdateSerializer(serializers.ModelSerializer):
+        ''' Validate partial updates to an offer and its packages. '''
+        details = OfferDetailCreateSerializer(many=True, source="offer_details")
+        class Meta:
+            model = Offer
+            fields = ('id','title', 'image', 'description', 'details')
+            
+        @transaction.atomic   
+        def update(self, instance, validated_data): # instance: the offer that should be updated, validated_data - 
+            ''' Update the offer and any provided packages. '''
+            # seperate detail fields from offer fields
+            details = validated_data.pop('offer_details', None) 
+            
+            # update offer fields
+            instance.title = validated_data.get("title", instance.title)
+            instance.description = validated_data.get("description", instance.description)
+            instance.image = validated_data.get("image", instance.image)
+            instance.save()
+            
+            # update detail fields
+            if details is not None:
+                for detail_data in details:
+                    offer_type = detail_data.get("offer_type")
+                    
+                    if offer_type is None:
+                        raise serializers.ValidationError({
+                            "details": "Für jedes Paket muss offer_type angegeben werden."
+                        })
+                    try:
+                        detail_instance = instance.offer_details.get(offer_type=offer_type)
+                    except OfferDetail.DoesNotExist:
+                        raise serializers.ValidationError({
+                            "details": f"Das Paket '{offer_type}' existiert nicht."
+                        })
+                    # update detail fields
+                    detail_instance.title = detail_data.get("title", detail_instance.title)
+                    detail_instance.revisions = detail_data.get("revisions", detail_instance.revisions)
+                    detail_instance.delivery_time_in_days = detail_data.get("delivery_time_in_days", detail_instance.delivery_time_in_days)
+                    detail_instance.price = detail_data.get("price", detail_instance.price)
+                    detail_instance.features = detail_data.get("features", detail_instance.features)
+                    detail_instance.save()
+
+            return instance
+            

@@ -103,7 +103,7 @@ class OfferRetrieveUpdateDeleteView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def patch(self, request, id):
-        ''' updated partial fields of a single offer by its ID '''
+        ''' Partially update an offer owned by the authenticated user. '''
         pass
     
     def delete(sel, request, id):
