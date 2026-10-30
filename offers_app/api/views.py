@@ -13,7 +13,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer
-from .permissions import BusinessUser
+from .permissions import BusinessUser, IsOfferOwner
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
 
@@ -88,7 +88,7 @@ class OfferDetailView(RetrieveAPIView):
 
 class OfferRetrieveUpdateDeleteView(APIView):
     ''' Endpoint to retrieve, update and delete objects by id '''
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOfferOwner] 
     
     def get(self, request, id):
         ''' retrieve a single offer by its ID '''
@@ -105,7 +105,11 @@ class OfferRetrieveUpdateDeleteView(APIView):
     def patch(self, request, id):
         ''' Partially update an offer owned by the authenticated user. '''
         offer = get_object_or_404(Offer, id=id)
+        self.check_object_permissions(request, offer) # Objektprüfung findet jetzt erst statt
         serializer = OfferUpdateSerializer(offer, partial=True, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def delete(sel, request, id):
         '''  '''
