@@ -16,11 +16,13 @@ class OrderListCreateView(APIView):
     permission_classes = [IsAuthenticated, IsCustomerForOrder]
     
     def get(self, request):
+        ''' Return orders associated with the authenticated user as a customer or business user. '''
         orders = Order.objects.filter(Q(business_user=request.user) | Q(customer_user=request.user)) # finde alle Einträge die entweder customer oder business sind
         serializer = OrderListSerializer(orders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         
     def post(self, request):
+        ''' Create an order from an offer detail for the authenticated customer. '''
         serializer = OrderCreateSerializer(data=request.data) # Eingabe Serializer: nimmt die gesendeten Daten entgegegen.
         serializer.is_valid(raise_exception=True) # prüft die Eingabe: ist die ID vorhanden...
         offer_detail_id = serializer.validated_data['offer_detail_id'] # holt die geprüfte ID aus den request Daten

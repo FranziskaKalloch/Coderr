@@ -15,5 +15,3 @@ class OrderListSerializer(serializers.ModelSerializer):
 class OrderCreateSerializer(serializers.Serializer):
     ''' Validate the offer detail ID provided to create an order. '''
     offer_detail_id = serializers.IntegerField(min_value=1)
-    fields = ('offer_detail_id')
-    
