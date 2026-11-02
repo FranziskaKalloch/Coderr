@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
 
 from profiles_app.models import Profile
 
@@ -20,4 +20,6 @@ class BusinessUser(BasePermission):
 class IsOfferOwner(BasePermission):
     """Allow changes only to the owner of an offer."""
     def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
         return obj.user == request.user

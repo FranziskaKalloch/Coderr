@@ -8,10 +8,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 
 
-
-
 class OfferListCreateTest(APITestCase):
-    ''' '''
     def setUp(self):
         ''' Create a test business user  '''
         self.business_user = User.objects.create_user(
@@ -65,15 +62,37 @@ class OfferListCreateTest(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
-class UserOfferList(APITestCase):
+class OfferRetrieveUpdateDeleteTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="Business_user2",
+            email="business_user2@web.de", 
+            password="IchBinBusinessUser2",  
+        )
+        self.profile = Profile.objects.create(user=self.user, type="business")
+        self.client.force_authenticate(user=self.user)
+        
+        self.offer = Offer.objects.create(
+            user = self.user,
+            title = "Retrieve, update and delete offer",
+            description = "This is a test offer for test.py"
+        )
+    
     def test_get_offers(self):
         ''' Test that an offer can be retrieved by its ID. '''
-        pass
+        url = reverse('id-offer', kwargs={"id": self.offer.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.offer.id)
     
     def test_update_offer(self):
         ''' Test that an offer can be partially updated by its owner. '''
-        pass
+        url = reverse('id-offer', kwargs={"id": self.offer.id})
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
     
-    def test_delefet_offer(self):
+    def test_delete_offer(self):
         ''' Test that an offer can be deleted by its owner. '''
-        pass
+        url = reverse('id-offer', kwargs={"id": self.offer.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
