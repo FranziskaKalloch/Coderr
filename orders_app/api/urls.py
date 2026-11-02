@@ -1,14 +1,10 @@
 
 from django.urls import path
 
-from .views import OrderListCreateView
+from .views import OrderListCreateView, OrderCreateSerializer
 
 
 urlpatterns = [
     path('orders/', OrderListCreateView.as_view(), name="orders"),
+    path('orders/<int:id>', OrderCreateSerializer.as_view(), name="order-status")
 ]
-
-
-# TODO 20: Import OrderUpdateView.
-# TODO 21: Connect orders/<int:id>/ to OrderUpdateView.as_view().
-# TODO 22: Give the route a name, for example order-detail.

@@ -6,8 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .serializers import OrderListSerializer, OrderCreateSerializer
-from .permissions import IsCustomerForOrder
+from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatusUpdateSerializer
+from .permissions import IsCustomerForOrder, IsBusinessUserOfOrder
 from ..models import Order
 from offers_app.models import OfferDetail
 
@@ -39,3 +39,17 @@ class OrderListCreateView(APIView):
             ) 
         output_serializer = OrderListSerializer(order)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED) # Gibt die erstellte Bestellung mit Status 201 zurück
+
+class OrderUpdateView(APIView):
+    permission_classes = [IsAuthenticated, IsBusinessUserOfOrder]
+    
+    def patch(self, request, id):
+        order = get_object_or_404(Order, id=id)
+        self.check_object_permissions(request, order)
+        serializer = Order()
+        # TODO 15: Pass the order instance and request.data to OrderStatusUpdateSerializer.
+#          Use partial=True for the PATCH request.
+# TODO 16: Validate the input with raise_exception=True.
+# TODO 17: Save the updated order.
+        output_serializer = OrderListSerializer(order)
+# TODO 19: Return the complete order data with HTTP 200 OK.
