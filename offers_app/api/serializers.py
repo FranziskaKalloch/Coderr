@@ -119,4 +119,3 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
                 detail_instance.save()
 
         return instance
-            

@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
-from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer
+from .serializers import OfferSerializer, OfferDetailSerializer, UserDetailSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferUpdateSerializer, OfferDetailCreateSerializer
 from .permissions import BusinessUser, IsOfferOwner
 from ..models import Offer, OfferDetail
 from .pagination import OfferPagination
@@ -84,7 +84,7 @@ class OfferDetailView(RetrieveAPIView):
     lookup_url_kwarg = "id"
     permission_classes = [IsAuthenticated]
     queryset = OfferDetail.objects.all()
-    serializer_class = OfferDetailSerializer
+    serializer_class = OfferDetailCreateSerializer
 
 
 class OfferRetrieveUpdateDeleteView(APIView):
