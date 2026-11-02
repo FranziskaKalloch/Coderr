@@ -86,7 +86,6 @@ class OfferDetailView(RetrieveAPIView):
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailCreateSerializer
 
-
 class OfferRetrieveUpdateDeleteView(APIView):
     ''' Endpoint to retrieve, update and delete objects by id '''
     permission_classes = [IsAuthenticated, IsOfferOwner] 

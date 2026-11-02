@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from ..models import Order
 
-class RetrieveOrderSerializer(serializers.ModelSerializer):
+class OrderListSerializer(serializers.ModelSerializer):
     ''' Represent orders with customer, business user, package details, status, and timestamps. '''
     features = serializers.ListField(child=serializers.CharField(max_length=255))
     offer_type = serializers.ChoiceField(choices=Order.OFFER_TYPE_CHOICES)
