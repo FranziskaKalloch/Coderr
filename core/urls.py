@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/', include('user_auth_app.api.urls')),
     path('api/', include('profiles_app.api.urls')),
     path('api/', include('offers_app.api.urls')),
+    path('api/', include('orders_app.api.urls')),
     
     # Generiert die OpenAPI-Schema-Datei
     path('api/schema/', SpectacularAPIView.as_view(), name="schema"),
