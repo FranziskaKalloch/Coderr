@@ -80,8 +80,9 @@ class OfferListView(ListAPIView):
         
     
 class OfferDetailView(RetrieveAPIView):
-    ''' Retrieve an offer package by its ID with public access. '''
-    permission_classes = [AllowAny]
+    ''' Retrieve an offer package by its ID '''
+    lookup_url_kwarg = "id"
+    permission_classes = [IsAuthenticated]
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
 

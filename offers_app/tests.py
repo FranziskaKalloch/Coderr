@@ -96,3 +96,35 @@ class OfferRetrieveUpdateDeleteTest(APITestCase):
         url = reverse('id-offer', kwargs={"id": self.offer.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        
+class OfferDetailTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="Business_user2",
+            email="business_user2@web.de", 
+            password="IchBinBusinessUser2",  
+        )
+        self.profile = Profile.objects.create(user=self.user, type="business")
+        self.client.force_authenticate(user=self.user)
+        
+        self.offer = Offer.objects.create(
+            user = self.user,
+            title = "Retrieve, update and delete offer",
+            description = "This is a test offer for test.py",
+            )
+            
+        self.offerdetail = OfferDetail.objects.create(
+            offer = self.offer,
+            title = "Basic Desing",
+            revisions = 2,
+            delivery_time_in_days= 5,
+            price = 100,
+            features = ["Logo Design", "Visitenkarte"],
+            offer_type = "basic"
+        )
+        
+    def test_get_offerDetails(self):
+        url = reverse("offer-detail", kwargs={"id": self.offerdetail.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
