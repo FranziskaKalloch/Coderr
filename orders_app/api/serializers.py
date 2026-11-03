@@ -17,7 +17,6 @@ class OrderCreateSerializer(serializers.Serializer):
     offer_detail_id = serializers.IntegerField(min_value=1)
     
 
-# Zusätzliche Felder müssen ausdrücklich abgelehnt werden - 400: Ungültiger Status (wird im ChoiceField geprüft) oder unzulässige Felder in der Anfrage!
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):
     ''' Validate and update the status of an order. '''
     status = serializers.ChoiceField(choices=Order.STATUS_CHOICES)
@@ -44,3 +43,6 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
 # self.initial_data = wenn der Serializer in der View erzeugt wird, dann speichert DRF bei data= was übergeben wird, self.initial_data sind die Rohdaten aus dem REquest, 
 # self.fields = 
 
+class OrderCountSerializer(serializers.Serializer):
+    ''' Represent the number of in-progress orders for a business user '''
+    order_count = serializers.IntegerField()

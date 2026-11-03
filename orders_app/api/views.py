@@ -6,10 +6,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 
-from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatusUpdateSerializer
+from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatusUpdateSerializer, OrderCountSerializer
 from .permissions import IsCustomerForOrder, IsBusinessUserOfOrder
 from ..models import Order
 from offers_app.models import OfferDetail
+from profiles_app import Profile
 
 
 class OrderListCreateView(APIView):
@@ -64,3 +65,14 @@ class OrderUpdateView(APIView):
         order = get_object_or_404(Order, id=id)
         order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class OrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, business_user_id):
+        ''' Return the number of in-progress orders for the specified business user. '''
+        get_object_or_404(Profile, user_id=business_user_id, type="business")
+        order_count = Order.objects.filter(business_user_id=business_user_id, status="in_progress").count()
+        serializer = OrderCountSerializer({"order_count": order_count})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
