@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 
-from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatusUpdateSerializer, OrderCountSerializer
+from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatusUpdateSerializer, OrderCountSerializer, CompletedOrderCountSerializer
 from .permissions import IsCustomerForOrder, IsBusinessUserOfOrder
 from ..models import Order
 from offers_app.models import OfferDetail
@@ -69,10 +69,19 @@ class OrderUpdateView(APIView):
 class OrderCountView(APIView):
     permission_classes = [IsAuthenticated]
     
-    def get(self, request, business_user_id):
+    def get(self, request, business_user_id): 
         ''' Return the number of in-progress orders for the specified business user. '''
-        get_object_or_404(Profile, user_id=business_user_id, type="business")
-        order_count = Order.objects.filter(business_user_id=business_user_id, status="in_progress").count()
-        serializer = OrderCountSerializer({"order_count": order_count})
+        get_object_or_404(Profile, user_id=business_user_id, type="business") # Django sucht in der Datenbank ein Profil, dessen Benutzer ID zur übergegebenen ID passt und dessen Typ business ist.
+        order_count = Order.objects.filter(business_user_id=business_user_id, status="in_progress").count() # Django zählt die Bestellungen, die beide Bedingungen erfüllen, richtiger Business User und status. 
+        serializer = OrderCountSerializer({"order_count": order_count}) # Bei einem Dictonary liest der Serializer den passenden Schlüssel aus. Bei einem Model-Objekt liest er das passendet Attribut
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
+class CompletedOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, business_user_id):
+        ''' Return the number of completed orders for specified business user '''
+        get_object_or_404(Profile, user_id=business_user_id, type="business")
+        completed_order_count = Order.objects.filter(business_user_id=business_user_id, status="completed").count()
+        serializer = CompletedOrderCountSerializer({"completed_order_count": completed_order_count})
+        return Response(serializer.data, status=status.HTTP_200_OK)

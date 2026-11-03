@@ -46,3 +46,7 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
 class OrderCountSerializer(serializers.Serializer):
     ''' Represent the number of in-progress orders for a business user '''
     order_count = serializers.IntegerField()
+    
+class CompletedOrderCountSerializer(serializers.Serializer):
+    ''' Represent the number of completed orders for a business user '''
+    completed_order_count = serializers.IntegerField()

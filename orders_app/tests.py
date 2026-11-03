@@ -335,3 +335,188 @@ class OrderDeleteTest(OrderAPITestBase):
         self.assertEqual(response.content, b"")
         self.assertFalse(Order.objects.filter(id=order.id).exists())
         self.assertTrue(Order.objects.filter(id=other_order.id).exists())
+
+
+class OrderCountTest(OrderAPITestBase):
+    def setUp(self):
+        super().setUp()
+        self.url = f"/api/order-count/{self.business_user.id}/"
+
+    def test_counts_only_matching_orders_for_requested_business_user(self):
+        ''' Count only the requested business user's orders with the required status. '''
+        for order_status in ("in_progress", "in_progress", "completed", "completed", "cancelled"):
+            order = self.create_order(self.customer_user)
+            order.status = order_status
+            order.save()
+
+        other_business = User.objects.create_user(username="other_business")
+        Profile.objects.create(user=other_business, type="business")
+        other_order = self.create_order(self.customer_user)
+        other_order.business_user = other_business
+        other_order.status = "in_progress"
+        other_order.save()
+
+        self.client.force_authenticate(user=self.customer_user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"order_count": 2})
+
+    def test_returns_zero_without_orders(self):
+        ''' Return zero for an existing business user without orders. '''
+        self.client.force_authenticate(user=self.customer_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"order_count": 0})
+
+    def test_returns_zero_when_no_orders_have_required_status(self):
+        ''' Return zero when all existing orders have a different status. '''
+        order = self.create_order(self.customer_user)
+        order.status = "cancelled"
+        order.save()
+        self.client.force_authenticate(user=self.customer_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"order_count": 0})
+
+    def test_business_user_can_retrieve_count(self):
+        ''' Allow authenticated business users to retrieve the count. '''
+        self.client.force_authenticate(user=self.business_user)
+        url = f"/api/order-count/{self.business_user.id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"order_count": 0})
+
+    def test_requires_authentication(self):
+        ''' Reject requests without authentication. '''
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_nonexistent_business_user_returns_404(self):
+        ''' Return HTTP 404 when the requested user does not exist. '''
+        missing_id = max(User.objects.values_list("id", flat=True)) + 1
+        self.client.force_authenticate(user=self.customer_user)
+        url = f"/api/order-count/{missing_id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_customer_id_returns_404(self):
+        ''' Return HTTP 404 when the requested user has a customer profile. '''
+        self.client.force_authenticate(user=self.business_user)
+        url = f"/api/order-count/{self.customer_user.id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_user_without_profile_returns_404(self):
+        ''' Return HTTP 404 when the requested user has no profile. '''
+        user_without_profile = User.objects.create_user(username="no_profile")
+        self.client.force_authenticate(user=self.customer_user)
+        url = f"/api/order-count/{user_without_profile.id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class CompletedOrderCountTest(OrderAPITestBase):
+    def setUp(self):
+        super().setUp()
+        self.url = f"/api/completed-order-count/{self.business_user.id}/"
+
+    def test_counts_only_matching_orders_for_requested_business_user(self):
+        ''' Count only the requested business user's orders with the required status. '''
+        for order_status in ("in_progress", "in_progress", "completed", "completed", "cancelled"):
+            order = self.create_order(self.customer_user)
+            order.status = order_status
+            order.save()
+
+        other_business = User.objects.create_user(username="other_business")
+        Profile.objects.create(user=other_business, type="business")
+        other_order = self.create_order(self.customer_user)
+        other_order.business_user = other_business
+        other_order.status = "completed"
+        other_order.save()
+
+        self.client.force_authenticate(user=self.customer_user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"completed_order_count": 2})
+
+    def test_returns_zero_without_orders(self):
+        ''' Return zero for an existing business user without orders. '''
+        self.client.force_authenticate(user=self.customer_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"completed_order_count": 0})
+
+    def test_returns_zero_when_no_orders_have_required_status(self):
+        ''' Return zero when all existing orders have a different status. '''
+        order = self.create_order(self.customer_user)
+        order.status = "cancelled"
+        order.save()
+        self.client.force_authenticate(user=self.customer_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"completed_order_count": 0})
+
+    def test_business_user_can_retrieve_count(self):
+        ''' Allow authenticated business users to retrieve the count. '''
+        self.client.force_authenticate(user=self.business_user)
+        url = f"/api/completed-order-count/{self.business_user.id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"completed_order_count": 0})
+
+    def test_requires_authentication(self):
+        ''' Reject requests without authentication. '''
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_nonexistent_business_user_returns_404(self):
+        ''' Return HTTP 404 when the requested user does not exist. '''
+        missing_id = max(User.objects.values_list("id", flat=True)) + 1
+        self.client.force_authenticate(user=self.customer_user)
+        url = f"/api/completed-order-count/{missing_id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_customer_id_returns_404(self):
+        ''' Return HTTP 404 when the requested user has a customer profile. '''
+        self.client.force_authenticate(user=self.business_user)
+        url = f"/api/completed-order-count/{self.customer_user.id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_user_without_profile_returns_404(self):
+        ''' Return HTTP 404 when the requested user has no profile. '''
+        user_without_profile = User.objects.create_user(username="no_profile")
+        self.client.force_authenticate(user=self.customer_user)
+        url = f"/api/completed-order-count/{user_without_profile.id}/"
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
