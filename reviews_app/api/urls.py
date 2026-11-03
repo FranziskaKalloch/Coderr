@@ -1,7 +1,7 @@
 
 from django.urls import path
 
-from .views import ReviewView
+from .views import ReviewView, ReviewUpdateDeleteView
 
 
 urlpatterns = [
