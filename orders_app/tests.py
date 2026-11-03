@@ -104,6 +104,29 @@ class OrderListTest(OrderAPITestBase):
 
 
 class OrderCreateTest(OrderAPITestBase):
+    def test_customer_can_create_three_orders(self):
+        ''' Verify that three POST requests create three distinct customer orders. '''
+        self.client.force_authenticate(user=self.customer_user)
+        data = {"offer_detail_id": self.offer_detail.id}
+        order_ids = []
+
+        for request_number in range(1, 4):
+            with self.subTest(request_number=request_number):
+                response = self.client.post(self.url, data, format="json")
+
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                order = Order.objects.get(id=response.data["id"])
+                self.assertEqual(order.customer_user, self.customer_user)
+                self.assertEqual(order.business_user, self.business_user)
+                self.assertEqual(order.status, "in_progress")
+                self.assertEqual(response.data["customer_user"], self.customer_user.id)
+                self.assertEqual(response.data["business_user"], self.business_user.id)
+                self.assertEqual(response.data["status"], "in_progress")
+                order_ids.append(order.id)
+
+        self.assertEqual(len(set(order_ids)), 3)
+        self.assertEqual(Order.objects.count(), 3)
+
     def test_customer_can_create_order(self):
         ''' Verify that customers can create orders with the selected offer detail data. '''
         self.client.force_authenticate(user=self.customer_user)
@@ -181,10 +204,134 @@ class OrderCreateTest(OrderAPITestBase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Order.objects.count(), 0)
-        
-# TODO 23: Test a successful status update by the order's business user.
-# TODO 24: Verify that the new status is saved and created_at stays unchanged.
-# TODO 25: Test rejection of customers and unrelated business users: HTTP 403.
-# TODO 26: Test an unauthenticated request: HTTP 401.
-# TODO 27: Test an invalid status and unexpected input fields: HTTP 400.
-# TODO 28: Test a nonexistent order as an authorized business user: HTTP 404.
+
+
+class OrderUpdateTest(OrderAPITestBase):
+    def setUp(self):
+        super().setUp()
+        self.order = self.create_order(self.customer_user)
+        self.url = reverse("order-status", kwargs={"id": self.order.id})
+
+    def test_business_user_can_update_order_status(self):
+        ''' Verify that the assigned business user can update the status. '''
+        self.client.force_authenticate(user=self.business_user)
+        created_at = self.order.created_at
+
+        response = self.client.patch(
+            self.url, {"status": "completed"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "completed")
+        self.assertEqual(self.order.created_at, created_at)
+        self.assertEqual(response.data["id"], self.order.id)
+        self.assertEqual(response.data["status"], "completed")
+
+    def test_customer_cannot_update_order_status(self):
+        ''' Verify that a customer cannot update an order's status. '''
+        self.client.force_authenticate(user=self.customer_user)
+
+        response = self.client.patch(
+            self.url, {"status": "completed"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+
+    def test_unrelated_business_user_cannot_update_order_status(self):
+        ''' Verify that business users cannot update another business user's order. '''
+        other_business_user = User.objects.create_user(
+            username="other_business", password="TestPassword123",
+        )
+        Profile.objects.create(user=other_business_user, type="business")
+        self.client.force_authenticate(user=other_business_user)
+
+        response = self.client.patch(
+            self.url, {"status": "completed"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+
+    def test_patch_requires_authentication(self):
+        ''' Verify that unauthenticated status updates are rejected. '''
+        response = self.client.patch(
+            self.url, {"status": "completed"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+
+    def test_invalid_status_is_rejected(self):
+        ''' Verify that an unsupported status returns HTTP 400. '''
+        self.client.force_authenticate(user=self.business_user)
+
+        response = self.client.patch(
+            self.url, {"status": "invalid"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+
+    def test_unexpected_fields_are_rejected(self):
+        ''' Verify that extra fields prevent the entire status update. '''
+        self.client.force_authenticate(user=self.business_user)
+        original_title = self.order.title
+
+        response = self.client.patch(
+            self.url,
+            {"status": "completed", "title": "Changed title"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+        self.assertEqual(self.order.title, original_title)
+
+    def test_missing_status_is_rejected(self):
+        ''' Verify that even a partial update requires a status. '''
+        self.client.force_authenticate(user=self.business_user)
+
+        response = self.client.patch(self.url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+
+    def test_nonexistent_order_returns_404(self):
+        ''' Verify that an authorized business user receives HTTP 404 for a missing order. '''
+        self.client.force_authenticate(user=self.business_user)
+        self.order.delete()
+
+        response = self.client.patch(
+            self.url, {"status": "completed"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class OrderDeleteTest(OrderAPITestBase):
+    def test_staff_user_can_delete_order(self):
+        ''' Verify that staff can delete an order and receive an empty HTTP 204 response. '''
+        staff_user = User.objects.create_user(
+            username="staff", password="TestPassword123", is_staff=True,
+        )
+        order = self.create_order(self.customer_user)
+        other_order = self.create_order(self.other_user)
+        self.client.force_authenticate(user=staff_user)
+        url = reverse("order-status", kwargs={"id": order.id})
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.content, b"")
+        self.assertFalse(Order.objects.filter(id=order.id).exists())
+        self.assertTrue(Order.objects.filter(id=other_order.id).exists())
