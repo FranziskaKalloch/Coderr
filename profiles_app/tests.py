@@ -85,17 +85,3 @@ class ProfileTests(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         
-###### GET 
-# einzelnes Profil 200 und richtige Profildaten; 
-# 401 ohne Anmeldung; 
-# 404 bei fehlendem Profil
-
-##### PATCH 
-# Profil 200 und Änderungen gespeichert; ausgelassene Felder bleiben erhalten; 
-# 403 bei fremdem Profil; 
-
-##### GET Business-Liste	
-# 200 und ausschließlich Business-Profile; 
-
-######GET Kunden-Liste	200 und ausschließlich Kundenprofile; 
-# 401 ohne Anmeldung
