@@ -33,5 +33,17 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Du hast diesen Business-Benutzer bereits bewertet")
         
         return validated_data
+
+class ReviewUpdateSerializer(serializers.ModelSerializer):
+    ''' Validate changes to a review's rating and description. '''
+    class Meta:
+        model = Review
+        fields = ('rating', 'description')
         
+    def validate(self, data):
+        ''' Reject input fields other than rating and description. '''
+        forbidden_fields = set(self.initial_data) - set(self.fields) 
         
+        if forbidden_fields:
+            raise serializers.ValidationError("Es dürfen nur die Felder 'rating' und 'description' geändert werden")
+        return data

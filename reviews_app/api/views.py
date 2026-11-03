@@ -4,11 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.exceptions import ValidationError
 
-from .serializers import ReviewSerializer, ReviewCreateSerializer
+from .serializers import ReviewSerializer, ReviewCreateSerializer, ReviewUpdateSerializer
 from ..models import Review
 from orders_app.api.permissions import IsCustomerForOrder
+from .permissions import IsReviewOwner
 class ReviewView(APIView):
     def get_permissions(self):
         ''' Return permission instances based on the HTTP request method. '''
@@ -58,4 +60,21 @@ class ReviewView(APIView):
         review = serializer.save(reviewer=request.user)
         outcome_serializer = ReviewSerializer(review)
         return Response(outcome_serializer.data, status=status.HTTP_201_CREATED)
-   
+    
+
+class ReviewUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    """Allow review owners to partially update or delete their reviews."""
+    queryset = Review.objects.all()
+    permission_classes = IsAuthenticated, IsReviewOwner
+    lookup_url_kwarg = "id"
+    serializer_class = ReviewUpdateSerializer
+    http_method_names = "patch", "delete", "options"
+    
+    def update(self,request, *args, **kwargs):
+        """Update a review and return its complete details."""
+        review = self.get_object()
+        serializer = self.get_serializer(review, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        outcome_serializer = ReviewSerializer(review)
+        return Response(outcome_serializer.data, status=status.HTTP_200_OK)

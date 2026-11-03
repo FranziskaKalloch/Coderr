@@ -10,7 +10,7 @@ from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatus
 from .permissions import IsCustomerForOrder, IsBusinessUserOfOrder
 from ..models import Order
 from offers_app.models import OfferDetail
-from profiles_app import Profile
+from profiles_app.models import Profile
 
 
 class OrderListCreateView(APIView):
