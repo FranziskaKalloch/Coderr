@@ -181,3 +181,10 @@ class OrderCreateTest(OrderAPITestBase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Order.objects.count(), 0)
+        
+# TODO 23: Test a successful status update by the order's business user.
+# TODO 24: Verify that the new status is saved and created_at stays unchanged.
+# TODO 25: Test rejection of customers and unrelated business users: HTTP 403.
+# TODO 26: Test an unauthenticated request: HTTP 401.
+# TODO 27: Test an invalid status and unexpected input fields: HTTP 400.
+# TODO 28: Test a nonexistent order as an authorized business user: HTTP 404.

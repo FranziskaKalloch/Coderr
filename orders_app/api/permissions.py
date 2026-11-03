@@ -18,8 +18,11 @@ class IsBusinessUserOfOrder(BasePermission):
     ''' Allow business users to update only their own orders. '''
     def has_permission(self, request, view):
         profile = getattr(request.user, "profile", None)
+        if profile is None:
+            return False
         
-        return request.user.is_authenticated and request.user.type == "business"
+        return request.user.is_authenticated and profile.type == "business"
     
     def has_object_permission(self, request, view, obj):
         return obj.business_user == request.user
+

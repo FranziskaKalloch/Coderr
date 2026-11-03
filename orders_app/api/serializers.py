@@ -17,15 +17,30 @@ class OrderCreateSerializer(serializers.Serializer):
     offer_detail_id = serializers.IntegerField(min_value=1)
     
 
+# Zusätzliche Felder müssen ausdrücklich abgelehnt werden - 400: Ungültiger Status (wird im ChoiceField geprüft) oder unzulässige Felder in der Anfrage!
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):
     ''' Validate and update the status of an order. '''
     status = serializers.ChoiceField(choices=Order.STATUS_CHOICES)
     class Meta:
         model = Order
         fields = ('status',)
+        
+    def validate(self, data): # Methode wird aufgerufen während is_valid() läuft. Data enthält bereits die geprüften Felder. Sie macht zwei Dinge: lehnt Felder ab, die nicht status sind, und stellt sicher, das status überhaupt mitgeschickt wurde
+        """Reject fields other than 'status' and require 'status' to be provided, including during partial updates. Return the validated data."""
+        unknown = set(self.initial_data) - set(self.fields)
+        if unknown:
+            raise serializers.ValidationError(
+                f"Unzulässige Felder: {' ,' .join(sorted(unknown))}"
+            )
+        if "status" not in data:
+            raise serializers.ValidationError({"status": "Dieses Feld ist erforderlich"})
+        return data
 
-# TODO 3: Configure Meta to use Order and expose only the status field.
-# TODO 4: Use Order.STATUS_CHOICES to validate the status.
-#         ModelSerializer derives these choices from the model automatically.
-# TODO 5: Reject any submitted field other than status with a ValidationError.
-#         Listing only status in Meta.fields does not reject unknown input fields.
+# set() ist eine Menge, also eine Sammlung ohne Reihenfolge und ohne Duplikate. Bei einem Dict liefert set() die Schlüssel. 
+# Das Minus zwischen set() bedeutet Differenz, alles was in a ist, aber nicht in b
+# set(geschickte Daten) - set(erlaubte Daten)
+# sorted() sortiert die Sammlung und gibt eine Liste zurück
+# join() das klebt eine Liste von Texten mit einem Trennzeichen zusammen
+# self.initial_data = wenn der Serializer in der View erzeugt wird, dann speichert DRF bei data= was übergeben wird, self.initial_data sind die Rohdaten aus dem REquest, 
+# self.fields = 
+

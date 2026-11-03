@@ -3,7 +3,7 @@ from django.db.models import Q
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import status
 
 from .serializers import OrderListSerializer, OrderCreateSerializer, OrderStatusUpdateSerializer
@@ -41,15 +41,26 @@ class OrderListCreateView(APIView):
         return Response(output_serializer.data, status=status.HTTP_201_CREATED) # Gibt die erstellte Bestellung mit Status 201 zurück
 
 class OrderUpdateView(APIView):
-    permission_classes = [IsAuthenticated, IsBusinessUserOfOrder]
+    def get_permissions(self):
+        ''' Return permission instances based on the HTTP request method. '''
+        if self.request.method == "DELETE":
+            return (IsAuthenticated(), IsAdminUser())
+        else:
+            return (IsAuthenticated(), IsBusinessUserOfOrder())
     
     def patch(self, request, id):
+        """Update an order's status after verifying that the authenticated user is the business user assigned to the order.
+        Validate the request data and return the updated order."""
         order = get_object_or_404(Order, id=id)
         self.check_object_permissions(request, order)
-        serializer = Order()
-        # TODO 15: Pass the order instance and request.data to OrderStatusUpdateSerializer.
-#          Use partial=True for the PATCH request.
-# TODO 16: Validate the input with raise_exception=True.
-# TODO 17: Save the updated order.
-        output_serializer = OrderListSerializer(order)
-# TODO 19: Return the complete order data with HTTP 200 OK.
+        serializer = OrderStatusUpdateSerializer(order, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        outcome_serializer = OrderListSerializer(order)
+        return Response(outcome_serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, id):
+        ''' Delete the specified order. Access is restricted to staff users. ''' 
+        order = get_object_or_404(Order, id=id)
+        order.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
