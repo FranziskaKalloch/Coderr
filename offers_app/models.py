@@ -6,12 +6,10 @@ from django.contrib.auth.models import User
 class Offer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="offers")
     title = models.CharField(max_length=100, blank=False, null=False)
-    image = models.ImageField(blank=True)
+    image = models.ImageField(blank=True, null=True) 
     description = models.TextField(blank=False, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-# Jedes OfferDetail gehört genau zu einem Angebot!
 class OfferDetail(models.Model):
     
     OFFER_TYPE_CHOICES = [
