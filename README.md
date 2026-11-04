@@ -100,14 +100,14 @@ git --version
 If Git is missing, run `xcode-select --install` and complete the Command Line
 Tools installation before continuing.
 
-### 1. Clone the repository
+### 1. Clone the repository (macOS)
 
 ```bash
 git clone https://github.com/FranziskaKalloch/Coderr.git
 cd Coderr
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create and activate a virtual environment (macOS)
 
 ```bash
 python3 --version
@@ -118,14 +118,14 @@ source .venv/bin/activate
 Check that `python3` is version 3.12 or newer. If it points to an older version,
 use your installed version explicitly, for example `python3.14 -m venv .venv`.
 
-### 3. Install dependencies
+### 3. Install dependencies (macOS)
 
 ```bash
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-### 4. Configure the environment
+### 4. Configure the environment (macOS)
 
 ```bash
 cp .env.example .env
@@ -143,7 +143,7 @@ Save with `Ctrl+O`, press Enter, and exit with `Ctrl+X`. Keep `.env` private; it
 is excluded from Git. If you already have a `.env` file, edit it directly instead
 of overwriting it.
 
-### 5. Initialize the database and start the server
+### 5. Initialize the database and start the server (macOS)
 
 ```bash
 python manage.py migrate
@@ -157,10 +157,11 @@ Stop the server with `Ctrl+C`.
 
 | Purpose | URL |
 | --- | --- |
-| Swagger UI | http://127.0.0.1:8000/api/docs/swagger/ |
-| ReDoc | http://127.0.0.1:8000/api/docs/redoc/ |
-| OpenAPI schema | http://127.0.0.1:8000/api/schema/ |
-| Django admin | http://127.0.0.1:8000/admin/ |
+
+| Swagger UI | <http://127.0.0.1:8000/api/docs/swagger/>|
+| ReDoc | <http://127.0.0.1:8000/api/docs/redoc/> |
+| OpenAPI schema | <http://127.0.0.1:8000/api/schema/> |
+| Django admin | <http://127.0.0.1:8000/admin/> |
 
 The root URL (`/`) has no page configured. Use the documentation URLs above to
 get started.
@@ -181,6 +182,23 @@ requests, send the returned token in the HTTP header:
 ```http
 Authorization: Token <your-token>
 ```
+
+## Connecting the frontend
+
+Set the frontend's API base URL to `http://127.0.0.1:8000/api/`.
+Serve the frontend over HTTP, for example with VS Code Live Server.
+
+By default, the backend permits API requests from `http://localhost:5500` and
+`http://127.0.0.1:5500`. If your frontend uses a different address or port, set
+the allowed origins in `.env` and restart Django:
+
+```dotenv
+CORS_ALLOWED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
+```
+
+List exact origins separated by commas, without paths or trailing slashes.
+CORS is enabled for `/api/` routes. The frontend should send the
+`Authorization: Token <your-token>` header after login.
 
 ## Development
 
