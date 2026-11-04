@@ -36,7 +36,7 @@ class OfferListView(ListAPIView):
             )
         creator_id = self.request.query_params.get("creator_id")
         
-        if creator_id is not None:
+        if creator_id not in (None, ""):
             try:
                 creator_id = int(creator_id)
             except ValueError:
@@ -45,7 +45,7 @@ class OfferListView(ListAPIView):
     
         price_limit = self.request.query_params.get("min_price")
         
-        if price_limit is not None:
+        if price_limit not in (None, ""):
             try:
                 price_limit = Decimal(price_limit)
                 if not price_limit.is_finite():
@@ -60,7 +60,7 @@ class OfferListView(ListAPIView):
             
         delivery_limit = self.request.query_params.get("max_delivery_time")
         
-        if delivery_limit is not None:
+        if delivery_limit not in (None, ""):
             try:
                 delivery_limit = int(delivery_limit)
             except ValueError:
