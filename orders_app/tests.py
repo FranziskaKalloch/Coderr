@@ -317,6 +317,36 @@ class OrderUpdateTest(OrderAPITestBase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_nonexistent_order_returns_404_for_all_authenticated_roles(self):
+        ''' Resolve missing orders before checking the user's profile or role. '''
+        user_without_profile = User.objects.create_user(username="no_profile")
+        self.order.delete()
+
+        for user in (self.customer_user, self.business_user, user_without_profile):
+            with self.subTest(username=user.username):
+                self.client.force_authenticate(user=user)
+
+                response = self.client.patch(
+                    self.url, {"status": "completed"}, format="json",
+                )
+
+                self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_assigned_user_requires_business_profile(self):
+        ''' Order ownership alone must not allow users without a business profile. '''
+        self.client.force_authenticate(user=self.business_user)
+        profile = self.business_user.profile
+        profile.type = "customer"
+        profile.save()
+
+        response = self.client.patch(
+            self.url, {"status": "completed"}, format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "in_progress")
+
 
 class OrderDeleteTest(OrderAPITestBase):
     def test_staff_user_can_delete_order(self):
